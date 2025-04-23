@@ -1,0 +1,44 @@
+name: Generate News Articles
+
+on:
+  schedule:
+    - cron: '0 6,18 * * *'  # Runs at 6:00 AM and 6:00 PM UTC
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama pull mistral
+
+      - name: Install dependencies
+        run: |
+          cd scripts
+          npm install
+          cd ..
+          npm install
+
+      - name: Generate articles
+        run: |
+          ollama serve &
+          sleep 10  # Wait for Ollama to start
+          cd scripts
+          node generateNews.js
+
+      - name: Commit and push if changes
+        run: |
+          git config --global user.name 'GitHub Action Bot'
+          git config --global user.email 'action@github.com'
+          git add .
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-generate news articles [skip ci]" && git push) 

@@ -1,0 +1,75 @@
+---
+const posts = await getCollection('blog');
+posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+interface Props {
+  limit?: number;
+}
+
+const { limit } = Astro.props;
+const displayPosts = limit ? posts.slice(0, limit) : posts;
+---
+
+<ul class="article-list">
+  {
+    displayPosts.map((post) => (
+      <li class="article-item">
+        <a href={`/blog/${post.slug}/`}>
+          <h2 class="title">{post.data.title}</h2>
+          <p class="date">
+            {post.data.pubDate.toLocaleDateString('en-us', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })}
+          </p>
+          <p class="description">{post.data.description}</p>
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .article-list {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0;
+  }
+
+  .article-item {
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 2rem;
+  }
+
+  .article-item:last-child {
+    border-bottom: none;
+  }
+
+  .article-item a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .article-item a:hover .title {
+    color: #3273dc;
+  }
+
+  .title {
+    font-size: 1.5rem;
+    margin: 0;
+    transition: color 0.2s ease;
+  }
+
+  .date {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+  }
+
+  .description {
+    margin: 0.5rem 0 0;
+    line-height: 1.6;
+  }
+</style> 
